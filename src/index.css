@@ -1,0 +1,11 @@
+/* Activare el modo oscuro */
+.dark-mode{
+    background-color: black;
+    color: white;
+}
+
+/* Activamos el modo claro */
+.app {
+    background-color: white;
+    color: black;
+}
