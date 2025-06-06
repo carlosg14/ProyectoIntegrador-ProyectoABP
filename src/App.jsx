@@ -15,12 +15,14 @@ function App() {
         setdark(!dark);
         containerRef.current.classList.toggle('dark-mode');
     };
+    const [page, setPage]= useState (1);
+    const limit = 10;
 
     useEffect(() => {
-        axios.get("https://dummyjson.com/products?limit=100").then((res) => {
+        axios.get('https://dummyjson.com/products?limit=${limit}&skip=${(page -1) * limit}`).then((res) => {
             setProducts(res.data.products);
         });
-    }, []);
+    }, [page]);
 
     const filteredProducts = products.filter((p) =>
         p.title.toLowerCase().includes(search.toLowerCase())
@@ -51,7 +53,7 @@ function App() {
         <div ref={containerRef}>
             <h1 className="titulo-personalizado">¡Hola!</h1>
 
-            <button onClick={toggleDark}>activar modo {dark ? 'claro': 'oscuro'}</button>
+            <button className= 'boton-personalizado' onClick={toggleDark}>activar modo {dark ? 'claro': 'oscuro'}</button>
 
             <input
                 type="text"
@@ -62,9 +64,29 @@ function App() {
             />
 
             <ProductList products={filteredProducts} />
+            <small> Estamos en la pagina {page}</small>
+            <br/>
 
+            <button disabled={page === 1}
+            className="boton-paginación"
+            onClick={()=>{
+                setPage(page - 1);
+            }}
+            > 
+            Página anterior</button>
+
+
+            <button disabled={products.length<limit} 
+            className="boton-paginación" 
+            onClick={()=>{
+                setPage(page + 1);
+            }}
+            >
+             Página siguiente</button>
+
+            
             <button
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="boton-personalizado"
                 onClick={() => setShow(!show)}
             >
                 {show ? "Ocultar estadísticas" : "Mostrar estadísticas"}
