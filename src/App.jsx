@@ -19,6 +19,15 @@ function App() {
     const [page, setPage]= useState (1);
     const limit = 10;
 
+    const [categories, setCategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState("");
+
+    useEffect(() => {
+        axios.get("https://dummyjson.com/products/categories")
+            .then(res => setCategories(res.data));
+    }, []);
+    
+    
     useEffect(() => {
         axios.get('https://dummyjson.com/products?limit=${limit}&skip=${(page -1) * limit}`).then((res) => {
             setProducts(res.data.products);
@@ -79,6 +88,23 @@ function App() {
 
             <button className= 'boton-personalizado' onClick={toggleDark}>activar modo {dark ? 'claro': 'oscuro'}</button>
 
+            <select
+                value={selectedCategory}
+                onChange={e => setSelectedCategory(e.target.value)}
+                className="boton-personalizado"
+            >
+                <option value="">Todas las categorías</option>
+                {categories.map(cat =>
+                    typeof cat === "string" ? (
+                        <option key={cat} value={cat}>{cat}</option>
+                    ) : (
+                        <option key={cat.slug || cat.name} value={cat.slug || cat.name}>
+                            {cat.name || cat.slug}
+                        </option>
+                    )
+                )}
+            </select>
+            
             <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
 
             <select onChange={(e)=> setFormat(e.target.value)} value={format} className="boton-personalizado">
