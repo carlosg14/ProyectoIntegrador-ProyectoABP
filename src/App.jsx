@@ -49,6 +49,29 @@ function App() {
             ).toFixed(2)
             : 0;
 
+    const handleExport = () => {
+                const blob = new Blob([JSON.stringify(filteredProducts, null, 2)], {
+                    type: "application/json",
+                });
+                const url = URL.createObjectURL(blob);
+                triggerDownload(url, `productos.${format}`);
+    }
+
+    const triggerDownload = (url, filename) => {
+                // crear el hipervinculo
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                // Agregamos el anchor tag al DOM
+                document.body.appendChild(link);
+                // Simulamos el click
+                link.click();
+                // Eliminar el elemento del anchor
+                document.body.removeChild(link);
+    }
+
+
+
     return (
         <div ref={containerRef}>
             <h1 className="titulo-personalizado">¡Hola!</h1>
@@ -63,7 +86,17 @@ function App() {
                 className="border border-gray-300 rounded px-2 py-1 mb-4"
             />
 
+            <select onChange={(e)=> setFormat(e.target.value)} value={format} className="boton-personalizado">
+                <option>Seleccionar formato</option>
+                <option value="json">JSON</option>
+                <option value="PDF">PDF</option>
+                <option value="Excel">EXCEL</option>
+            </select>
+            
+            <button className="boton-paginación"onClick={handleExport}>Exportar archivo</button>
+
             <ProductList products={filteredProducts} />
+            
             <small> Estamos en la pagina {page}</small>
             <br/>
 
