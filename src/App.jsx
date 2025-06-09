@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import ProductList from "./components/ProductList";
 import StatsPanel from "./components/StatsPanel";
 import Stats from "./components/Stats";
+import SearchBar from "./components/SearchBar";
 import "./App.css";
 
 function App() {
@@ -78,13 +79,7 @@ function App() {
 
             <button className= 'boton-personalizado' onClick={toggleDark}>activar modo {dark ? 'claro': 'oscuro'}</button>
 
-            <input
-                type="text"
-                placeholder="Buscar producto"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 mb-4"
-            />
+            <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
 
             <select onChange={(e)=> setFormat(e.target.value)} value={format} className="boton-personalizado">
                 <option>Seleccionar formato</option>
