@@ -18,25 +18,40 @@ function App() {
     };
     const [page, setPage]= useState (1);
     const limit = 10;
+    const [format, setFormat] = useState("");
 
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("");
 
+    const [sortField, setSortField] = useState(""); 
+    const [sortOrder, setSortOrder] = useState("asc");  
+    
+    
     useEffect(() => {
         axios.get("https://dummyjson.com/products/categories")
             .then(res => setCategories(res.data));
     }, []);
-    
-    
+
     useEffect(() => {
-        axios.get('https://dummyjson.com/products?limit=${limit}&skip=${(page -1) * limit}`).then((res) => {
+        axios.get(`https://dummyjson.com/products?limit=${limit}&skip=${(page -1) * limit}`).then((res) => {            
             setProducts(res.data.products);
         });
     }, [page]);
 
-    const filteredProducts = products.filter((p) =>
-        p.title.toLowerCase().includes(search.toLowerCase())
-    );
+    // Filtrar productos de la API
+    let filteredProducts = products
+        .filter(p => p.title.toLowerCase().includes(search.toLowerCase()))
+        .filter(p => !selectedCategory || p.category === selectedCategory);
+
+    if (sortField) {
+  filteredProducts = [...filteredProducts].sort((a, b) => {
+    if (sortOrder === "asc") {
+      return a[sortField] - b[sortField];
+    } else {
+      return b[sortField] - a[sortField];
+    }
+    });
+    }
 
     const totalProducts = filteredProducts.length;
     const maxProduct =
@@ -59,15 +74,16 @@ function App() {
             ).toFixed(2)
             : 0;
 
-    const handleExport = () => {
+
+            const handleExport = () => {
                 const blob = new Blob([JSON.stringify(filteredProducts, null, 2)], {
                     type: "application/json",
                 });
                 const url = URL.createObjectURL(blob);
                 triggerDownload(url, `productos.${format}`);
-    }
+            }
 
-    const triggerDownload = (url, filename) => {
+            const triggerDownload = (url, filename) => {
                 // crear el hipervinculo
                 const link = document.createElement('a');
                 link.href = url;
@@ -78,13 +94,12 @@ function App() {
                 link.click();
                 // Eliminar el elemento del anchor
                 document.body.removeChild(link);
-    }
-
-
+            }
 
     return (
         <div ref={containerRef}>
-            <h1 className="titulo-personalizado">¡Hola!</h1>
+            <h1 className="text-green-600">
+                Productos</h1>
 
             <button className= 'boton-personalizado' onClick={toggleDark}>activar modo {dark ? 'claro': 'oscuro'}</button>
 
@@ -104,23 +119,43 @@ function App() {
                     )
                 )}
             </select>
-            
-            <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
 
+            <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
+                  
             <select onChange={(e)=> setFormat(e.target.value)} value={format} className="boton-personalizado">
                 <option>Seleccionar formato</option>
                 <option value="json">JSON</option>
                 <option value="PDF">PDF</option>
                 <option value="Excel">EXCEL</option>
             </select>
-            
-            <button className="boton-paginación"onClick={handleExport}>Exportar archivo</button>
+            <button className="px-4 py2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow transition"onClick={handleExport}>Exportar archivo</button>
+
+            <div style={{ display: "flex", gap: "1rem", margin: "1rem 0" }}>
+                <select
+                    value={sortField}
+                    onChange={e => setSortField(e.target.value)}
+                    className="boton-personalizado"
+                >
+                    <option value="">Ordenar por...</option>
+                    <option value="price">Precio</option>
+                    <option value="rating">Rating</option>
+                </select>
+                <select
+                    value={sortOrder}
+                    onChange={e => setSortOrder(e.target.value)}
+                    className="boton-personalizado"
+                >
+                    <option value="asc">Ascendente</option>
+                    <option value="desc">Descendente</option>
+                </select>
+                </div>
 
             <ProductList products={filteredProducts} />
-            
+
             <small> Estamos en la pagina {page}</small>
             <br/>
 
+            
             <button disabled={page === 1}
             className="boton-paginación"
             onClick={()=>{
@@ -138,7 +173,6 @@ function App() {
             >
              Página siguiente</button>
 
-            
             <button
                 className="boton-personalizado"
                 onClick={() => setShow(!show)}
