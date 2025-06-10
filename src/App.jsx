@@ -4,6 +4,10 @@ import ProductList from "./components/ProductList";
 import StatsPanel from "./components/StatsPanel";
 import Stats from "./components/Stats";
 import SearchBar from "./components/SearchBar";
+import BarChartCategory from "./components/BarChartCategory";
+import StockPieChart from "./components/StockPieChart";
+import StockRating from "./components/StockRating";
+import PriceLineChart from "./components/PriceLineChart";
 import "./App.css";
 
 function App() {
@@ -26,7 +30,6 @@ function App() {
     const [sortField, setSortField] = useState(""); 
     const [sortOrder, setSortOrder] = useState("asc");  
     
-    
     useEffect(() => {
         axios.get("https://dummyjson.com/products/categories")
             .then(res => setCategories(res.data));
@@ -42,17 +45,27 @@ function App() {
     let filteredProducts = products
         .filter(p => p.title.toLowerCase().includes(search.toLowerCase()))
         .filter(p => !selectedCategory || p.category === selectedCategory);
-
     if (sortField) {
-  filteredProducts = [...filteredProducts].sort((a, b) => {
+        filteredProducts = [...filteredProducts].sort((a, b) => {
     if (sortOrder === "asc") {
-      return a[sortField] - b[sortField];
+        return a[sortField] - b[sortField];
     } else {
-      return b[sortField] - a[sortField];
+         return b[sortField] - a[sortField];
     }
     });
     }
-
+    const barChartData = [];
+    const categoryCount = {};
+    filteredProducts.forEach(p => {
+        categoryCount[p.category] = (categoryCount[p.category] || 0) + 1;
+    });
+    for (const [cat, count] of Object.entries(categoryCount)) {
+        barChartData.push({ category: cat, cantidad: count });
+    }
+    const stockPieData = [
+        { name: "Stock ≥ 50", value: filteredProducts.filter(p => p.stock >= 50).length },
+        { name: "Stock < 50", value: filteredProducts.filter(p => p.stock < 50).length }
+    ];
     const totalProducts = filteredProducts.length;
     const maxProduct =
         filteredProducts.length > 0
@@ -73,8 +86,6 @@ function App() {
                 filteredProducts.length
             ).toFixed(2)
             : 0;
-
-
             const handleExport = () => {
                 const blob = new Blob([JSON.stringify(filteredProducts, null, 2)], {
                     type: "application/json",
@@ -82,7 +93,6 @@ function App() {
                 const url = URL.createObjectURL(blob);
                 triggerDownload(url, `productos.${format}`);
             }
-
             const triggerDownload = (url, filename) => {
                 // crear el hipervinculo
                 const link = document.createElement('a');
@@ -95,14 +105,16 @@ function App() {
                 // Eliminar el elemento del anchor
                 document.body.removeChild(link);
             }
-
+            const lineChartData = filteredProducts.map((p, idx) => ({
+                    nombre: p.title,
+                    precio: p.price,
+                    index: idx + 1
+                    }));
     return (
         <div ref={containerRef}>
-            <h1 className="text-green-600">
+            <h1 className="text-red-600">
                 Productos</h1>
-
             <button className= 'boton-personalizado' onClick={toggleDark}>activar modo {dark ? 'claro': 'oscuro'}</button>
-
             <select
                 value={selectedCategory}
                 onChange={e => setSelectedCategory(e.target.value)}
@@ -119,9 +131,7 @@ function App() {
                     )
                 )}
             </select>
-
-            <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
-                  
+            <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />      
             <select onChange={(e)=> setFormat(e.target.value)} value={format} className="boton-personalizado">
                 <option>Seleccionar formato</option>
                 <option value="json">JSON</option>
@@ -149,13 +159,9 @@ function App() {
                     <option value="desc">Descendente</option>
                 </select>
                 </div>
-
             <ProductList products={filteredProducts} />
-
             <small> Estamos en la pagina {page}</small>
             <br/>
-
-            
             <button disabled={page === 1}
             className="boton-paginación"
             onClick={()=>{
@@ -163,8 +169,6 @@ function App() {
             }}
             > 
             Página anterior</button>
-
-
             <button disabled={products.length<limit} 
             className="boton-paginación" 
             onClick={()=>{
@@ -179,9 +183,6 @@ function App() {
             >
                 {show ? "Ocultar estadísticas" : "Mostrar estadísticas"}
             </button>
-            
-            
-            
             {show && (
                 <StatsPanel
                     total={totalProducts}
@@ -195,7 +196,6 @@ function App() {
                 />
             )}
             {filteredProducts.length == 0 && <div>No se encontraron productos</div>}
-            
             {show && (
                 <Stats
                     total={totalProducts}
@@ -203,9 +203,14 @@ function App() {
                     min={minProduct}
                 />
             )}
-            
+            <h3 className="mt-6 mb-2 font-bold">Cantidad de productos por categoría</h3>
+                <BarChartCategory data={barChartData} />
+            <h3 className="mt-6 mb-2 font-bold">Proporción de productos según stock</h3>
+                <StockPieChart data={stockPieData} />      
+            <StockRating products={filteredProducts} />
+            <h3 className="mt-6 mb-2 font-bold">Evolución de precios (simulada)</h3>
+            <PriceLineChart data={lineChartData} />
         </div>
     );
 }
-
 export default App;
