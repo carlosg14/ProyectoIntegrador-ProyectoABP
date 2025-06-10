@@ -11,8 +11,8 @@ function Stats({ total, max, min }) {
             {
                 label: 'Precios',
                 data: [min, max],
-                backgroundColor: ['#f87171', '#4ade80'],
-                borderRadius: 8,
+                backgroundColor: ['#B7C396', '#8A4C57'],
+                borderRadius: 5,
             },
         ],
     };
